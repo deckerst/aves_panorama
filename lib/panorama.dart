@@ -1,5 +1,3 @@
-library panorama;
-
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
@@ -10,18 +8,18 @@ import 'package:motion_sensors/motion_sensors.dart';
 
 enum SensorControl {
   /// No sensor used.
-  None,
+  none,
 
   /// Use gyroscope and accelerometer.
-  Orientation,
+  orientation,
 
   /// Use magnetometer and accelerometer. The logitude 0 points to north.
-  AbsoluteOrientation,
+  absoluteOrientation,
 }
 
 class Panorama extends StatefulWidget {
-  Panorama({
-    Key? key,
+  const Panorama({
+    super.key,
     this.latitude = 0,
     this.longitude = 0,
     this.zoom = 1.0,
@@ -36,7 +34,7 @@ class Panorama extends StatefulWidget {
     this.latSegments = 32,
     this.lonSegments = 64,
     this.interactive = true,
-    this.sensorControl = SensorControl.None,
+    this.sensorControl = SensorControl.none,
     this.croppedArea = const Rect.fromLTWH(0.0, 0.0, 1.0, 1.0),
     this.croppedFullWidth = 1.0,
     this.croppedFullHeight = 1.0,
@@ -48,7 +46,7 @@ class Panorama extends StatefulWidget {
     this.onImageLoad,
     this.child,
     this.hotspots,
-  }) : super(key: key);
+  });
 
   /// The initial latitude, in degrees, between -90 and 90. default to 0 (the vertical center of the image).
   final double latitude;
@@ -129,7 +127,7 @@ class Panorama extends StatefulWidget {
   final List<Hotspot>? hotspots;
 
   @override
-  _PanoramaState createState() => _PanoramaState();
+  State<Panorama> createState() => _PanoramaState();
 }
 
 class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin {
@@ -142,7 +140,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
   double zoomDelta = 0;
   late Offset _lastFocalPoint;
   double? _lastZoom;
-  double _animateDirection = 1.0;
+  final double _animateDirection = 1.0;
   late AnimationController _controller;
   double screenOrientationRad = 0.0;
   Vector3 orientation = Vector3(0, radians(90), 0);
@@ -193,7 +191,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
     _lastZoom ??= zoom;
     zoomDelta += _lastZoom! * details.scale - (zoom + zoomDelta);
 
-    if (widget.sensorControl == SensorControl.None && !_controller.isAnimating) {
+    if (widget.sensorControl == SensorControl.none && !_controller.isAnimating) {
       _controller.reset();
       _controller.forward();
     }
@@ -235,7 +233,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
 
     // stop animation if not needed
     if (latitudeDelta.abs() < _epsilon && longitudeDelta.abs() < _epsilon && zoomDelta.abs() < _epsilon) {
-      if (widget.sensorControl == SensorControl.None && _controller.isAnimating) {
+      if (widget.sensorControl == SensorControl.none && _controller.isAnimating) {
         _controller.stop();
       }
     }
@@ -285,16 +283,16 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
   void _updateSensorControl() {
     _orientationSubscription?.cancel();
     switch (widget.sensorControl) {
-      case SensorControl.Orientation:
+      case SensorControl.orientation:
         motionSensors.orientationUpdateInterval = Duration.microsecondsPerSecond ~/ 60;
-        _orientationSubscription = motionSensors.orientation.listen((OrientationEvent event) {
+        _orientationSubscription = motionSensors.orientation.listen((event) {
           orientation.setValues(event.yaw, event.pitch, event.roll);
           _updateView();
         });
         break;
-      case SensorControl.AbsoluteOrientation:
+      case SensorControl.absoluteOrientation:
         motionSensors.absoluteOrientationUpdateInterval = Duration.microsecondsPerSecond ~/ 60;
-        _orientationSubscription = motionSensors.absoluteOrientation.listen((AbsoluteOrientationEvent event) {
+        _orientationSubscription = motionSensors.absoluteOrientation.listen((event) {
           orientation.setValues(event.yaw, event.pitch, event.roll);
           _updateView();
         });
@@ -303,8 +301,8 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
     }
 
     _screenOrientSubscription?.cancel();
-    if (widget.sensorControl != SensorControl.None) {
-      _screenOrientSubscription = motionSensors.screenOrientation.listen((ScreenOrientationEvent event) {
+    if (widget.sensorControl != SensorControl.none) {
+      _screenOrientSubscription = motionSensors.screenOrientation.listen((event) {
         screenOrientationRad = radians(event.angle!);
       });
     }
@@ -321,7 +319,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
   void _loadTexture(ImageProvider? provider) {
     if (provider == null) return;
     _imageStream?.removeListener(ImageStreamListener(_updateTexture));
-    _imageStream = provider.resolve(ImageConfiguration());
+    _imageStream = provider.resolve(const ImageConfiguration());
     ImageStreamListener listener = ImageStreamListener(_updateTexture);
     _imageStream!.addListener(listener);
   }
@@ -424,8 +422,8 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
 
     _updateSensorControl();
 
-    _controller = AnimationController(duration: Duration(milliseconds: 60000), vsync: this)..addListener(_updateView);
-    if (widget.sensorControl != SensorControl.None) _controller.repeat();
+    _controller = AnimationController(duration: const Duration(milliseconds: 60000), vsync: this)..addListener(_updateView);
+    if (widget.sensorControl != SensorControl.none) _controller.repeat();
   }
 
   @override
@@ -442,8 +440,19 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
   void didUpdateWidget(Panorama oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (surface == null) return;
-    if (widget.latSegments != oldWidget.latSegments || widget.lonSegments != oldWidget.lonSegments || widget.croppedArea != oldWidget.croppedArea || widget.croppedFullWidth != oldWidget.croppedFullWidth || widget.croppedFullHeight != oldWidget.croppedFullHeight) {
-      surface!.mesh = generateSphereMesh(radius: _radius, latSegments: widget.latSegments, lonSegments: widget.lonSegments, croppedArea: widget.croppedArea, croppedFullWidth: widget.croppedFullWidth, croppedFullHeight: widget.croppedFullHeight);
+    if (widget.latSegments != oldWidget.latSegments ||
+        widget.lonSegments != oldWidget.lonSegments ||
+        widget.croppedArea != oldWidget.croppedArea ||
+        widget.croppedFullWidth != oldWidget.croppedFullWidth ||
+        widget.croppedFullHeight != oldWidget.croppedFullHeight) {
+      surface!.mesh = generateSphereMesh(
+        radius: _radius,
+        latSegments: widget.latSegments,
+        lonSegments: widget.lonSegments,
+        croppedArea: widget.croppedArea,
+        croppedFullWidth: widget.croppedFullWidth,
+        croppedFullHeight: widget.croppedFullHeight,
+      );
     }
     if (widget.child?.image != oldWidget.child?.image) {
       _loadTexture(widget.child?.image);
@@ -460,7 +469,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
         Cube(interactive: false, onSceneCreated: _onSceneCreated),
         StreamBuilder(
           stream: _stream,
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
+          builder: (context, snapshot) {
             return buildHotspotWidgets(widget.hotspots);
           },
         ),

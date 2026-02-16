@@ -4,26 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:panorama/panorama.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Panorama',
       theme: ThemeData.dark(),
-      home: MyHomePage(title: 'Flutter Panorama'),
+      home: const MyHomePage(title: 'Flutter Panorama'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, this.title}) : super(key: key);
+  const MyHomePage({super.key, this.title});
 
   final String? title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -38,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   ];
   ImagePicker picker = ImagePicker();
 
-  void onViewChanged(longitude, latitude, tilt) {
+  void onViewChanged(double longitude, double latitude, double tilt) {
     setState(() {
       _lon = longitude;
       _lat = latitude;
@@ -52,17 +54,17 @@ class _MyHomePageState extends State<MyHomePage> {
       children: [
         TextButton(
           style: ButtonStyle(
-            shape: WidgetStateProperty.all(CircleBorder()),
+            shape: WidgetStateProperty.all(const CircleBorder()),
             backgroundColor: WidgetStateProperty.all(Colors.black38),
             foregroundColor: WidgetStateProperty.all(Colors.white),
           ),
-          child: Icon(icon),
           onPressed: onPressed,
+          child: Icon(icon),
         ),
         text != null
             ? Container(
-                padding: EdgeInsets.all(4.0),
-                decoration: BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.all(Radius.circular(4))),
+                padding: const EdgeInsets.all(4.0),
+                decoration: const BoxDecoration(color: Colors.black38, borderRadius: BorderRadius.all(Radius.circular(4))),
                 child: Center(child: Text(text)),
               )
             : Container(),
@@ -76,20 +78,19 @@ class _MyHomePageState extends State<MyHomePage> {
     switch (_panoId % panoImages.length) {
       case 0:
         panorama = Panorama(
-          sensorControl: SensorControl.Orientation,
+          sensorControl: SensorControl.orientation,
           onViewChanged: onViewChanged,
-          onTap: (longitude, latitude, tilt) => print('onTap: $longitude, $latitude, $tilt'),
-          onLongPressStart: (longitude, latitude, tilt) => print('onLongPressStart: $longitude, $latitude, $tilt'),
-          onLongPressMoveUpdate: (longitude, latitude, tilt) => print('onLongPressMoveUpdate: $longitude, $latitude, $tilt'),
-          onLongPressEnd: (longitude, latitude, tilt) => print('onLongPressEnd: $longitude, $latitude, $tilt'),
-          child: Image.asset('assets/panorama.jpg'),
+          onTap: (longitude, latitude, tilt) => debugPrint('onTap: $longitude, $latitude, $tilt'),
+          onLongPressStart: (longitude, latitude, tilt) => debugPrint('onLongPressStart: $longitude, $latitude, $tilt'),
+          onLongPressMoveUpdate: (longitude, latitude, tilt) => debugPrint('onLongPressMoveUpdate: $longitude, $latitude, $tilt'),
+          onLongPressEnd: (longitude, latitude, tilt) => debugPrint('onLongPressEnd: $longitude, $latitude, $tilt'),
           hotspots: [
             Hotspot(
               latitude: -15.0,
               longitude: -129.0,
               width: 90,
               height: 75,
-              widget: hotspotButton(text: "Next scene", icon: Icons.open_in_browser, onPressed: () => setState(() => _panoId++)),
+              widget: hotspotButton(text: 'Next scene', icon: Icons.open_in_browser, onPressed: () => setState(() => _panoId++)),
             ),
             Hotspot(
               latitude: -42.0,
@@ -106,41 +107,42 @@ class _MyHomePageState extends State<MyHomePage> {
               widget: hotspotButton(icon: Icons.arrow_upward, onPressed: () {}),
             ),
           ],
+          child: Image.asset('assets/panorama.jpg'),
         );
         break;
       case 2:
         panorama = Panorama(
-          sensorControl: SensorControl.Orientation,
+          sensorControl: SensorControl.orientation,
           onViewChanged: onViewChanged,
-          croppedArea: Rect.fromLTWH(2533.0, 1265.0, 5065.0, 2533.0),
+          croppedArea: const Rect.fromLTWH(2533.0, 1265.0, 5065.0, 2533.0),
           croppedFullWidth: 10132.0,
           croppedFullHeight: 5066.0,
-          child: Image.asset('assets/panorama_cropped.jpg'),
           hotspots: [
             Hotspot(
               latitude: 0.0,
               longitude: -46.0,
               width: 90.0,
               height: 75.0,
-              widget: hotspotButton(text: "Next scene", icon: Icons.double_arrow, onPressed: () => setState(() => _panoId++)),
+              widget: hotspotButton(text: 'Next scene', icon: Icons.double_arrow, onPressed: () => setState(() => _panoId++)),
             ),
           ],
+          child: Image.asset('assets/panorama_cropped.jpg'),
         );
         break;
       default:
         panorama = Panorama(
-          sensorControl: SensorControl.Orientation,
+          sensorControl: SensorControl.orientation,
           onViewChanged: onViewChanged,
-          child: panoImages[_panoId % panoImages.length],
           hotspots: [
             Hotspot(
               latitude: 0.0,
               longitude: 160.0,
               width: 90.0,
               height: 75.0,
-              widget: hotspotButton(text: "Next scene", icon: Icons.double_arrow, onPressed: () => setState(() => _panoId++)),
+              widget: hotspotButton(text: 'Next scene', icon: Icons.double_arrow, onPressed: () => setState(() => _panoId++)),
             ),
           ],
+          child: panoImages[_panoId % panoImages.length],
         );
     }
     return Scaffold(
@@ -164,7 +166,7 @@ class _MyHomePageState extends State<MyHomePage> {
             }
           });
         },
-        child: Icon(Icons.panorama),
+        child: const Icon(Icons.panorama),
       ),
     );
   }
