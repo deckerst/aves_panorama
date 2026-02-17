@@ -13,7 +13,7 @@ enum SensorControl {
   /// Use gyroscope and accelerometer.
   orientation,
 
-  /// Use magnetometer and accelerometer. The logitude 0 points to north.
+  /// Use magnetometer and accelerometer. The longitude 0 points to north.
   absoluteOrientation,
 }
 
@@ -69,10 +69,10 @@ class Panorama extends StatefulWidget {
   /// The maximal longitude to show. default to 180.0
   final double maxLongitude;
 
-  /// The minimal zomm. default to 1.0
+  /// The minimal zoom. default to 1.0
   final double minZoom;
 
-  /// The maximal zomm. default to 5.0
+  /// The maximal zoom. default to 5.0
   final double maxZoom;
 
   /// default to 0.05
@@ -359,7 +359,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
     final v = Vector4(2.0 * x / camera.viewportWidth - 1.0, 1.0 - 2.0 * y / camera.viewportHeight, 1.0, 1.0);
     // create projection matrix
     final m = camera.projectionMatrix * camera.lookAtMatrix;
-    // apply inversed projection matrix
+    // apply inverse projection matrix
     m.invert();
     v.applyMatrix4(m);
     // apply perspective division
@@ -390,7 +390,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
     if (hotspots != null && scene != null) {
       for (Hotspot hotspot in hotspots) {
         final pos = positionFromLatLon(hotspot.latitude, hotspot.longitude);
-        final origin = Offset(hotspot.width * hotspot.orgin.dx, hotspot.height * hotspot.orgin.dy);
+        final origin = Offset(hotspot.width * hotspot.origin.dx, hotspot.height * hotspot.origin.dy);
         final transform = scene!.camera.lookAtMatrix * matrixFromLatLon(hotspot.latitude, hotspot.longitude);
         final child = Positioned(
           left: pos.x - origin.dx,
@@ -496,7 +496,7 @@ class Hotspot {
     this.name,
     this.latitude = 0.0,
     this.longitude = 0.0,
-    this.orgin = const Offset(0.5, 0.5),
+    this.origin = const Offset(0.5, 0.5),
     this.width = 32.0,
     this.height = 32.0,
     this.widget,
@@ -511,8 +511,8 @@ class Hotspot {
   /// The initial longitude, in degrees, between -180 and 180.
   final double longitude;
 
-  /// The local orgin of this hotspot. Default is Offset(0.5, 0.5).
-  final Offset orgin;
+  /// The local origin of this hotspot. Default is Offset(0.5, 0.5).
+  final Offset origin;
 
   // The width of widget. Default is 32.0
   double width;

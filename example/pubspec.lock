@@ -261,7 +261,7 @@ packages:
     description:
       path: "."
       ref: aves
-      resolved-ref: "4b11d59f4bda152627f701070272f657f8358e67"
+      resolved-ref: "62799271dc38f3c6dcef804ca401c361a40350e7"
       url: "https://github.com/deckerst/aves_panorama_motion_sensors.git"
     source: git
     version: "0.1.0"
