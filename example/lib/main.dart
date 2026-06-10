@@ -79,6 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
       case 0:
         panorama = Panorama(
           sensorControl: SensorControl.orientation,
+          sensorOrientationMeanCount: 10,
           onViewChanged: onViewChanged,
           onTap: (longitude, latitude, tilt) => debugPrint('onTap: $longitude, $latitude, $tilt'),
           onLongPressStart: (longitude, latitude, tilt) => debugPrint('onLongPressStart: $longitude, $latitude, $tilt'),

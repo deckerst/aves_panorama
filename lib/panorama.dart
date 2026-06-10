@@ -34,7 +34,8 @@ class Panorama extends StatefulWidget {
     this.latSegments = 32,
     this.lonSegments = 64,
     this.interactive = true,
-    this.sensorControl = SensorControl.none,
+    this.sensorControl = .none,
+    this.sensorOrientationMeanCount = 1,
     this.croppedArea = const Rect.fromLTWH(0.0, 0.0, 1.0, 1.0),
     this.croppedFullWidth = 1.0,
     this.croppedFullHeight = 1.0,
@@ -93,6 +94,8 @@ class Panorama extends StatefulWidget {
   /// Control the panorama with motion sensors.
   final SensorControl sensorControl;
 
+  final int sensorOrientationMeanCount;
+
   /// Area of the image was cropped from the full sized photo sphere.
   final Rect croppedArea;
 
@@ -150,6 +153,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
   Stream<Null>? _stream;
   ImageStream? _imageStream;
   bool _scaling = false;
+  final List<Vector3> _sensorOrientationEvents = [];
 
   static const double _halfPi = math.pi * .5;
   static const double _epsilon = .001;
@@ -191,7 +195,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
     _lastZoom ??= zoom;
     zoomDelta += _lastZoom! * details.scale - (zoom + zoomDelta);
 
-    if (widget.sensorControl == SensorControl.none && !_controller.isAnimating) {
+    if (widget.sensorControl == .none && !_controller.isAnimating) {
       _controller.reset();
       _controller.forward();
     }
@@ -233,7 +237,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
 
     // stop animation if not needed
     if (latitudeDelta.abs() < _epsilon && longitudeDelta.abs() < _epsilon && zoomDelta.abs() < _epsilon) {
-      if (widget.sensorControl == SensorControl.none && _controller.isAnimating) {
+      if (widget.sensorControl == .none && _controller.isAnimating) {
         _controller.stop();
       }
     }
@@ -283,17 +287,17 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
   void _updateSensorControl() {
     _orientationSubscription?.cancel();
     switch (widget.sensorControl) {
-      case SensorControl.orientation:
+      case .orientation:
         motionSensors.orientationUpdateInterval = Duration.microsecondsPerSecond ~/ 60;
         _orientationSubscription = motionSensors.orientation.listen((event) {
-          orientation.setValues(event.yaw, event.pitch, event.roll);
+          orientation.setFrom(_saveSensorOrientation(event.yaw, event.pitch, event.roll));
           _updateView();
         });
         break;
-      case SensorControl.absoluteOrientation:
+      case .absoluteOrientation:
         motionSensors.absoluteOrientationUpdateInterval = Duration.microsecondsPerSecond ~/ 60;
         _orientationSubscription = motionSensors.absoluteOrientation.listen((event) {
-          orientation.setValues(event.yaw, event.pitch, event.roll);
+          orientation.setFrom(_saveSensorOrientation(event.yaw, event.pitch, event.roll));
           _updateView();
         });
         break;
@@ -301,11 +305,30 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
     }
 
     _screenOrientSubscription?.cancel();
-    if (widget.sensorControl != SensorControl.none) {
+    if (widget.sensorControl != .none) {
       _screenOrientSubscription = motionSensors.screenOrientation.listen((event) {
         screenOrientationRad = radians(event.angle!);
       });
     }
+  }
+
+  // return rolling average
+  Vector3 _saveSensorOrientation(double yaw, double pitch, double roll) {
+    _sensorOrientationEvents.add(Vector3(yaw, pitch, roll));
+
+    final meanCount = widget.sensorOrientationMeanCount;
+    while (_sensorOrientationEvents.length > meanCount) {
+      _sensorOrientationEvents.removeAt(0);
+    }
+
+    double yawTotal = 0, pitchTotal = 0, rollTotal = 0;
+    for (final v in _sensorOrientationEvents) {
+      yawTotal += v.x;
+      pitchTotal += v.y;
+      rollTotal += v.z;
+    }
+    final count = _sensorOrientationEvents.length;
+    return Vector3(yawTotal / count, pitchTotal / count, rollTotal / count);
   }
 
   void _updateTexture(ImageInfo imageInfo, bool synchronousCall) {
@@ -423,7 +446,7 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
     _updateSensorControl();
 
     _controller = AnimationController(duration: const Duration(milliseconds: 60000), vsync: this)..addListener(_updateView);
-    if (widget.sensorControl != SensorControl.none) _controller.repeat();
+    if (widget.sensorControl != .none) _controller.repeat();
   }
 
   @override
