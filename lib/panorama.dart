@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_cube/flutter_cube.dart';
 import 'package:motion_sensors/motion_sensors.dart';
+import 'package:panorama/math_utils.dart';
 
 enum SensorControl {
   /// No sensor used.
@@ -321,14 +322,14 @@ class _PanoramaState extends State<Panorama> with SingleTickerProviderStateMixin
       _sensorOrientationEvents.removeAt(0);
     }
 
-    double yawTotal = 0, pitchTotal = 0, rollTotal = 0;
-    for (final v in _sensorOrientationEvents) {
-      yawTotal += v.x;
-      pitchTotal += v.y;
-      rollTotal += v.z;
+    if (_sensorOrientationEvents.length > 1) {
+      final yawMean = circularMean(_sensorOrientationEvents.map((v) => v.x));
+      final pitchMean = circularMean(_sensorOrientationEvents.map((v) => v.y));
+      final rollMean = circularMean(_sensorOrientationEvents.map((v) => v.z));
+      return Vector3(yawMean, pitchMean, rollMean);
+    } else {
+      return _sensorOrientationEvents.first;
     }
-    final count = _sensorOrientationEvents.length;
-    return Vector3(yawTotal / count, pitchTotal / count, rollTotal / count);
   }
 
   void _updateTexture(ImageInfo imageInfo, bool synchronousCall) {
