@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_cube/flutter_cube.dart';
 import 'package:motion_sensors/motion_sensors.dart';
 import 'package:panorama/math_utils.dart';

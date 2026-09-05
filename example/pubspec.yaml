@@ -4,7 +4,7 @@ version: 1.0.0+1
 publish_to: none
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
+  sdk: ">=3.13.2 <4.0.0"
 
 dependencies:
   flutter:
@@ -12,6 +12,7 @@ dependencies:
   panorama: 
     path: ../
   image_picker:
+  material_ui:
 
 dev_dependencies:
   flutter_test:
